@@ -1,10 +1,32 @@
+import com.sun.org.glassfish.external.statistics.TimeStatistic;
+
 import java.sql.*;
 import java.io.*;
+
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 class Main{
     static int customer_id=-1;
     static Scanner sc = new Scanner(System.in);
+    public static void test(){
+        try {
+            //test any defective code block
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
+            int item_id = 1;
+            int total = 0;
+            int quantity = 2;
+            PreparedStatement cost = con.prepareStatement("SELECT Selling_cost FROM Items WHERE Item_ID=? ");
+            cost.setInt(1, item_id);
+            ResultSet tot = cost.executeQuery();
+            tot.next();
+            total = total + (tot.getInt("Selling_cost")) * quantity;
+            System.out.println(total);
+        }catch (Exception e){System.out.println(e);}
+    }
     public static void viewOrderDetailS(int Order_ID){
         System.out.println("Viewing Order Details");
         try{
@@ -13,15 +35,18 @@ class Main{
             Connection con=DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
             PreparedStatement stmt = con.prepareStatement("select Items.Item_ID,Name,Selling_cost,OrderItems.Quantity from Items join OrderItems on Items.Item_ID=OrderItems.Item_ID where OrderItems.Order_ID = ?;");
+            PreparedStatement tot = con.prepareStatement("select Total from Orders where Order_ID = ?");
+            tot.setInt(1,Order_ID);
+            ResultSet r = tot.executeQuery();
 
-
+            r.next();
             stmt.setInt(1,Order_ID);
             ResultSet rs = stmt.executeQuery();
             while(rs.next()){
                 System.out.println(rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getInt(4) );
 
             }
-
+            System.out.println("Total : "+ r.getInt("Total"));
             con.close();
         }catch(Exception e){ System.out.println(e);}
 
@@ -56,17 +81,104 @@ class Main{
             con.close();
         }catch(Exception e){ System.out.println(e);}
     }
-    public static void placeOrder(){
-        System.out.println("Order Placed");
-    }
 
     public static void viewItems(){
-       // select Items.Item_ID,Name,Selling_cost,OrderItems.Quantity from Items join OrderItems on Items.Item_ID=OrderItems.Item_ID where OrderItems.Order_ID = 1;
+        try{
+            //int choice = 1;
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            Statement stmt = con.createStatement();
 
+
+            ResultSet rs = stmt.executeQuery("SELECT Item_ID, Name, Current_stock, Selling_cost from Items");
+            while(rs.next()){
+                System.out.println(rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getInt(4) );
+
+            }
+
+
+            con.close();
+        }catch(Exception e){ System.out.println(e);}
+       // select Items.Item_ID,Name,Selling_cost,OrderItems.Quantity from Items join OrderItems on Items.Item_ID=OrderItems.Item_ID where OrderItems.Order_ID = 1;
+        return;
     }
+    public static void placeOrder() {
+        viewItems();
+        int choice = 1;
+        int item_id,quantity;
+        int total=0;
+        HashMap<Integer,Integer> cart = new HashMap<>();
+        try {
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT Order_ID FROM Orders");
+            int id = 0;
+
+            if (rs.last()) {
+                id = rs.getInt("Order_ID") + 1;
+            }
+            viewItems();
+            while (choice != 3) {
+
+                System.out.print("1.AddItem\n2.Confirm Order\n3.Exit");
+                choice = sc.nextInt();
+                switch (choice) {
+                    case 1:
+                        try {
+
+                            System.out.print("Enter the item_id:");
+                            item_id = sc.nextInt();
+                            System.out.print("Enter the quantity:");
+                            quantity = sc.nextInt();
+                            cart.put(item_id, quantity);
+                            PreparedStatement cost = con.prepareStatement("SELECT Selling_cost FROM Items WHERE Item_ID=? ");
+                            cost.setInt(1, item_id);
+                            ResultSet iss = cost.executeQuery();
+                            iss.next();
+                            total = total + (iss.getInt("Selling_cost")) * quantity;
+                        }
+                        catch (Exception e){System.out.println(e);};
+                        break;
+                    case 2:
+                        PreparedStatement ps = con.prepareStatement("INSERT INTO OrderItems VALUES (?,?,?)");
+                        PreparedStatement order = con.prepareStatement("INSERT INTO Orders VALUES (?,?,?,?,?,?)");
+                        Calendar cal = Calendar.getInstance();
+                        Timestamp timestamp = new Timestamp(cal.getTimeInMillis());
+
+                        order.setInt(1,id);
+                        order.setTimestamp(2,timestamp);
+                        order.setInt(3,total);
+                        order.setInt(4,10);
+                        order.setInt(5,18);
+                        order.setInt(6,customer_id);
+                        order.executeUpdate();
+
+                        for(Map.Entry<Integer,Integer> curr_item:cart.entrySet()){
+                            ps.setInt(1,curr_item.getKey());
+                            ps.setInt(2,id);
+                            ps.setInt(3,curr_item.getValue());
+                            ps.executeUpdate();
+                        }
+                        break;
+                    case 3:
+                        return;
+
+
+                }
+            }
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
     public static void showMenu() {
         int choice = 1;
-        while (choice != 3) {
+        while (choice != 4) {
             System.out.println("1.View Orders\n2.Place Order\n3.View Items\n4.Exit");
             choice = sc.nextInt();
             switch (choice) {
@@ -80,14 +192,187 @@ class Main{
                     viewItems();
                     break;
                 case 4:
-                    break;
+                    System.exit(0);
                 default:
                     break;
             }
         }
     }
+    public static void viewAllOrders(){
+        try{
+            int choice = 1;
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            Statement stmt = con.createStatement();
+
+
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Orders");
+            while(rs.next()){
+                System.out.println(rs.getInt(6)+" "+ rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getInt(4) + " " + rs.getInt(5)  );
+
+            }
+
+
+            while(choice!=-1){
+                System.out.println("Select the order ID you wish to view( -1 to go back ):");
+                choice = sc.nextInt();
+                if(choice==-1){
+                    break;
+                }
+                else {
+                    viewOrderDetailS(choice);
+                }
+            }
+            con.close();
+        }catch(Exception e){ System.out.println(e);}
+
+    }
+
+    public static void updateItems(){
+        try{
+            int item_ID,stock,buyingCost,sellingCost;
+            String itemName,smanufacturedDate,sexpiryDate;
+
+            viewItems();
+            System.out.print("Enter Item ID to update : ");
+
+            item_ID = sc.nextInt();
+            sc.nextLine();
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            PreparedStatement stmt = con.prepareStatement("UPDATE Items SET Name=?,Current_stock=?,Manufactured_Date=?,Expiry_Date=?,Buying_Cost=?,Selling_cost=? WHERE Item_ID=?");
+            System.out.print("Enter Item Name:");
+            itemName = sc.nextLine();
+            System.out.print("Enter Current Stock:");
+            stock = sc.nextInt();
+            sc.nextLine();
+            System.out.print("Enter Manufactured Date:");
+            smanufacturedDate = sc.nextLine();
+            Date manufacturedDate = new SimpleDateFormat("dd/MM/yyyy").parse(smanufacturedDate);
+            System.out.print("Enter Expiry Date:");
+            sexpiryDate = sc.nextLine();
+            Date expiryDate=new SimpleDateFormat("dd/MM/yyyy").parse(sexpiryDate);
+            System.out.print("Enter Buying Cost:");
+            buyingCost = sc.nextInt();
+            System.out.print("Enter Selling Cost:");
+            sellingCost = sc.nextInt();
+            stmt.setInt(7,item_ID);
+            stmt.setString(1,itemName);
+            stmt.setInt(2,stock);
+            stmt.setTimestamp(3,new Timestamp(manufacturedDate.getTime()));
+            stmt.setTimestamp(4,new Timestamp(expiryDate.getTime()));
+            stmt.setInt(5,buyingCost);
+            stmt.setInt(6,sellingCost);
+            stmt.executeUpdate();
+            con.close();
+            System.out.println("Item Updated");
+            viewItems();
+        }catch(Exception e){ System.out.println(e);}
+
+    }
+
+    public static void createItem(){
+        try{
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT Item_ID FROM Items");
+            int id = 0,stock,buyingCost,sellingCost;
+            String itemName,smanufacturedDate,sexpiryDate;
+            if(rs.last()){
+                id = rs.getInt("Item_ID") + 1;
+            }
+            sc.nextLine();
+            System.out.print("Enter Item Name:");
+            itemName = sc.nextLine();
+            System.out.print("Enter Current Stock:");
+            stock = sc.nextInt();
+            sc.nextLine();
+            System.out.print("Enter Manufactured Date:");
+            smanufacturedDate = sc.nextLine();
+            Date manufacturedDate = new SimpleDateFormat("dd/MM/yyyy").parse(smanufacturedDate);
+            System.out.print("Enter Expiry Date:");
+            sexpiryDate = sc.nextLine();
+            Date expiryDate=new SimpleDateFormat("dd/MM/yyyy").parse(sexpiryDate);
+            System.out.print("Enter Buying Cost:");
+            buyingCost = sc.nextInt();
+            System.out.print("Enter Selling Cost:");
+            sellingCost = sc.nextInt();
+            PreparedStatement ins=con.prepareStatement("INSERT INTO Items VALUES (?,?,?,?,?,?,?) ");
+
+            ins.setInt(1,id);
+            ins.setString(2,itemName);
+            ins.setInt(3,stock);
+            ins.setTimestamp(4,new Timestamp(manufacturedDate.getTime()));
+            ins.setTimestamp(5,new Timestamp(expiryDate.getTime()));
+            ins.setInt(6,buyingCost);
+            ins.setInt(7,sellingCost);
+            ins.executeUpdate();
+            con.close();
+            System.out.println("Item Created");
+
+
+        }catch(Exception e){ System.out.println(e);}
+    }
+
+    public static void deleteItem(){
+        try{
+            int item_ID;
+            viewItems();
+            System.out.print("Enter Item ID to delete : ");
+            item_ID = sc.nextInt();
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            PreparedStatement stmt = con.prepareStatement("DELETE FROM Items WHERE Item_ID=?;");
+            stmt.setInt(1,item_ID);
+            stmt.executeUpdate();
+            con.close();
+        }catch(Exception e){ System.out.println(e);}
+
+    }
+
+    public static void adminSignIn() {
+        int choice;
+        System.out.println("Do you want to continue as a admin?\n1.Yes\n2.No\nEnter Your Choice: ");
+        choice = sc.nextInt();
+        if (choice == 2) {
+            return;
+        } else {
+            while (choice != 6) {
+                System.out.println("1.View Orders\n2.View Items\n3.Edit Item\n4.Create Item\n5.Delete Item\n6.Exit");
+                choice = sc.nextInt();
+                switch (choice) {
+                    case 1:
+                        viewAllOrders();
+                        break;
+                    case 2:
+                        viewItems();
+                        break;
+                    case 3:
+                        updateItems();
+                        break;
+                    case 4:
+                        createItem();
+                        break;
+                    case 5:
+                        deleteItem();
+                        break;
+                    case 6:
+                        System.exit(0);
+                        break;
+
+                }
+
+            }
+        }
+    }
     public static void signUp() {
-       // System.out.println("SignedUp");
+        // System.out.println("SignedUp");
         try{
 
             Class.forName("com.mysql.jdbc.Driver");
@@ -120,7 +405,7 @@ class Main{
             ins.setString(5,email);
             ins.setInt(6,0);
             ins.setString(7,password);
-            int i = ins.executeUpdate();
+            ins.executeUpdate();
             con.close();
             System.out.println("SignedUp");
             signIn();
@@ -145,10 +430,14 @@ class Main{
             ResultSet rs = stmt.executeQuery();
             rs.next();
             if(rs.getString("Password").equals(password)){
-                //session.setAttribute("customer_id", rs.getInt("Customer_ID"));
                 customer_id = rs.getInt("Customer_ID");
                 System.out.println("authentication sucessfull");
+                if(rs.getInt("isAdmin") == 1 ){
+                    adminSignIn();
+                }
+
                 showMenu();
+
 	}
             else{
                 System.out.println("wrong password");
@@ -161,10 +450,11 @@ class Main{
     }
 
     public static void main(String args[]){
-
+        System.out.println("----------------------------------------\n   Welcome to Order Management System\n----------------------------------------");
         int choice=1;
+        //test();
         while(choice!=3){
-            System.out.println("1.SignUp\n2.SignIn\n3.Exit");
+            System.out.print("1.SignUp\n2.SignIn\n3.Exit\nEnter Your Choice : ");
             choice = sc.nextInt();
             switch (choice){
                 case 1:signUp();
@@ -173,7 +463,9 @@ class Main{
                         break;
                 case 3:break;
                 default:break;
+
             }
         }
+
     }
 }
