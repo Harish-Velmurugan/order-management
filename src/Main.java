@@ -1,21 +1,31 @@
-import com.sun.org.glassfish.external.statistics.TimeStatistic;
+
 
 import java.sql.*;
-import java.io.*;
-
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
 class Main{
+
+    static Connection con;
+public static void dbconnect() {
+    try {
+        Class.forName("com.mysql.jdbc.Driver");
+        con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
+    }catch (Exception e){
+        System.out.println(e);
+    }
+}
+
+
     static int customer_id=-1;
     static Scanner sc = new Scanner(System.in);
+
     public static void test(){
         try {
             //test any defective code block
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
+
             int item_id = 1;
             int total = 0;
             int quantity = 2;
@@ -31,9 +41,7 @@ class Main{
         System.out.println("Viewing Order Details");
         try{
             int choice = 1;
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             PreparedStatement stmt = con.prepareStatement("select Items.Item_ID,Name,Selling_cost,OrderItems.Quantity from Items join OrderItems on Items.Item_ID=OrderItems.Item_ID where OrderItems.Order_ID = ?;");
             PreparedStatement tot = con.prepareStatement("select Total from Orders where Order_ID = ?");
             tot.setInt(1,Order_ID);
@@ -54,9 +62,7 @@ class Main{
     public static void viewOrders(){
         try{
             int choice = 1;
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             PreparedStatement stmt = con.prepareStatement("select Order_Id,CreatedAt,Total,Discount from Orders join Customers on Orders.Customer_ID = Customers.Customer_ID where Customers.Customer_ID=?");
 
             int id = customer_id;
@@ -85,9 +91,7 @@ class Main{
     public static void viewItems(){
         try{
             //int choice = 1;
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             Statement stmt = con.createStatement();
 
 
@@ -111,9 +115,7 @@ class Main{
         HashMap<Integer,Integer> cart = new HashMap<>();
         try {
 
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
+
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT Order_ID FROM Orders");
             int id = 0;
@@ -201,9 +203,7 @@ class Main{
     public static void viewAllOrders(){
         try{
             int choice = 1;
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             Statement stmt = con.createStatement();
 
 
@@ -239,9 +239,7 @@ class Main{
 
             item_ID = sc.nextInt();
             sc.nextLine();
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             PreparedStatement stmt = con.prepareStatement("UPDATE Items SET Name=?,Current_stock=?,Manufactured_Date=?,Expiry_Date=?,Buying_Cost=?,Selling_cost=? WHERE Item_ID=?");
             System.out.print("Enter Item Name:");
             itemName = sc.nextLine();
@@ -276,9 +274,7 @@ class Main{
     public static void createItem(){
         try{
 
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT Item_ID FROM Items");
             int id = 0,stock,buyingCost,sellingCost;
@@ -325,9 +321,7 @@ class Main{
             viewItems();
             System.out.print("Enter Item ID to delete : ");
             item_ID = sc.nextInt();
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             PreparedStatement stmt = con.prepareStatement("DELETE FROM Items WHERE Item_ID=?;");
             stmt.setInt(1,item_ID);
             stmt.executeUpdate();
@@ -375,9 +369,7 @@ class Main{
         // System.out.println("SignedUp");
         try{
 
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+            
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT Customer_ID FROM Customers");
             int id = 0,age;
@@ -415,9 +407,7 @@ class Main{
     public static void signIn(){
         try{
 
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con=DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8","root","Harishwin@123");
+
             PreparedStatement stmt = con.prepareStatement("SELECT * FROM Customers where Mail=?");
 
             String username,password;
@@ -453,18 +443,28 @@ class Main{
         System.out.println("----------------------------------------\n   Welcome to Order Management System\n----------------------------------------");
         int choice=1;
         //test();
-        while(choice!=3){
-            System.out.print("1.SignUp\n2.SignIn\n3.Exit\nEnter Your Choice : ");
-            choice = sc.nextInt();
-            switch (choice){
-                case 1:signUp();
+        dbconnect();
+        try {
+            while (choice != 3) {
+                System.out.print("1.SignUp\n2.SignIn\n3.Exit\nEnter Your Choice : ");
+                choice = sc.nextInt();
+                switch (choice) {
+                    case 1:
+                        signUp();
                         break;
-                case 2:signIn();
+                    case 2:
+                        signIn();
                         break;
-                case 3:break;
-                default:break;
+                    case 3:
+                        con.close();
+                        break;
+                    default:
+                        break;
 
+                }
             }
+        }catch (Exception e){
+            System.out.println(e);
         }
 
     }
