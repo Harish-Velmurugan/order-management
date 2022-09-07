@@ -21,6 +21,8 @@
 ### Homepage:
 ![homepage](ouput/homepage.png)
 
+### SignUp:
+![signIn](ouput/signUp.png)
 
 ### Admin can login as Customer or as Admin:
 ![adminLoginAsCustomer](ouput/adminAsCustomer.png)
