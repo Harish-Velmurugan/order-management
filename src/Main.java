@@ -6,17 +6,17 @@ import java.util.*;
 import java.util.Date;
 
 class Main{
-
     static Connection con;
-public static void dbconnect() {
-    try {
-        Class.forName("com.mysql.jdbc.Driver");
-        con = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
-    }catch (Exception e){
-        System.out.println(e);
+public static void dbconnect()
+    {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
-}
 
 
     static int customer_id=-1;
@@ -50,12 +50,13 @@ public static void dbconnect() {
             r.next();
             stmt.setInt(1,Order_ID);
             ResultSet rs = stmt.executeQuery();
+            System.out.println("Item ID  Item Name  Cost  Quantity");
             while(rs.next()){
                 System.out.println(rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getInt(4) );
 
             }
             System.out.println("Total : "+ r.getInt("Total"));
-            con.close();
+            
         }catch(Exception e){ System.out.println(e);}
 
     }
@@ -68,6 +69,7 @@ public static void dbconnect() {
             int id = customer_id;
             stmt.setInt(1,id);
             ResultSet rs = stmt.executeQuery();
+            System.out.println("Order Id  Placed At  Total  Discount");
             while(rs.next()){
                 System.out.println(rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getInt(4) );
 
@@ -84,7 +86,7 @@ public static void dbconnect() {
                     viewOrderDetailS(choice);
                 }
             }
-            con.close();
+            
         }catch(Exception e){ System.out.println(e);}
     }
 
@@ -96,13 +98,14 @@ public static void dbconnect() {
 
 
             ResultSet rs = stmt.executeQuery("SELECT Item_ID, Name, Current_stock, Selling_cost from Items");
+            System.out.println("Item ID  Name  Stock  Cost");
             while(rs.next()){
                 System.out.println(rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getInt(4) );
 
             }
 
 
-            con.close();
+            
         }catch(Exception e){ System.out.println(e);}
        // select Items.Item_ID,Name,Selling_cost,OrderItems.Quantity from Items join OrderItems on Items.Item_ID=OrderItems.Item_ID where OrderItems.Order_ID = 1;
         return;
@@ -208,6 +211,7 @@ public static void dbconnect() {
 
 
             ResultSet rs = stmt.executeQuery("SELECT * FROM Orders");
+            System.out.println("Customer ID  Order ID  Placed On  Total  Discount  Tax");
             while(rs.next()){
                 System.out.println(rs.getInt(6)+" "+ rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getInt(4) + " " + rs.getInt(5)  );
 
@@ -224,7 +228,7 @@ public static void dbconnect() {
                     viewOrderDetailS(choice);
                 }
             }
-            con.close();
+            
         }catch(Exception e){ System.out.println(e);}
 
     }
@@ -264,7 +268,7 @@ public static void dbconnect() {
             stmt.setInt(5,buyingCost);
             stmt.setInt(6,sellingCost);
             stmt.executeUpdate();
-            con.close();
+            
             System.out.println("Item Updated");
             viewItems();
         }catch(Exception e){ System.out.println(e);}
@@ -308,7 +312,7 @@ public static void dbconnect() {
             ins.setInt(6,buyingCost);
             ins.setInt(7,sellingCost);
             ins.executeUpdate();
-            con.close();
+            
             System.out.println("Item Created");
 
 
@@ -325,7 +329,7 @@ public static void dbconnect() {
             PreparedStatement stmt = con.prepareStatement("DELETE FROM Items WHERE Item_ID=?;");
             stmt.setInt(1,item_ID);
             stmt.executeUpdate();
-            con.close();
+            
         }catch(Exception e){ System.out.println(e);}
 
     }
@@ -398,7 +402,7 @@ public static void dbconnect() {
             ins.setInt(6,0);
             ins.setString(7,password);
             ins.executeUpdate();
-            con.close();
+            
             System.out.println("SignedUp");
             signIn();
 
@@ -434,17 +438,17 @@ public static void dbconnect() {
             }
 
 
-            con.close();
+            
         }catch(Exception e){ System.out.println(e);}
 
     }
 
-    public static void main(String args[]){
+    public static void main(String args[]) {
         System.out.println("----------------------------------------\n   Welcome to Order Management System\n----------------------------------------");
-        int choice=1;
+        int choice = 1;
         //test();
-        dbconnect();
         try {
+            dbconnect();
             while (choice != 3) {
                 System.out.print("1.SignUp\n2.SignIn\n3.Exit\nEnter Your Choice : ");
                 choice = sc.nextInt();
@@ -463,9 +467,9 @@ public static void dbconnect() {
 
                 }
             }
-        }catch (Exception e){
-            System.out.println(e);
-        }
 
+        }catch (Exception e){
+            System.out.print(e);
+        }
     }
 }
