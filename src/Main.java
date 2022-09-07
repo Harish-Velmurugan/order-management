@@ -181,10 +181,64 @@ public static void dbconnect()
         }
     }
 
+    public static void viewProfile(){
+
+        try{
+            int choice = 1;
+
+            PreparedStatement stmt = con.prepareStatement("SELECT * FROM Customers WHERE Customer_ID=?");
+
+            int id = customer_id;
+            stmt.setInt(1,id);
+            ResultSet rs = stmt.executeQuery();
+            System.out.println("Customer Id || Name || Age || Phone || Mail");
+            while(rs.next()){
+                System.out.println(rs.getInt(1)+" "+rs.getString(2)+"  "+rs.getInt(3)+"  "+rs.getString(4)+" "+rs.getString(5) );
+
+            }
+
+            showMenu();
+
+
+
+        }catch(Exception e){ System.out.println(e);}
+
+    }
+
+    public static void updateProfile(){
+        try{
+            int age;
+            String name,phone,mail;
+
+
+            sc.nextLine();
+            PreparedStatement stmt = con.prepareStatement("UPDATE Customers SET Name=?,Age=?,Phone=?,Mail=? WHERE Customer_ID=?");
+            System.out.print("Enter Your Name:");
+            name = sc.nextLine();
+            System.out.print("Enter Your Age:");
+            age = sc.nextInt();
+            sc.nextLine();
+            System.out.print("Enter Your Phone Number:");
+            phone = sc.nextLine();
+            System.out.print("Enter Your Mail: ");
+            mail = sc.nextLine();
+            stmt.setInt(5,customer_id);
+            stmt.setString(1,name);
+            stmt.setInt(2,age);
+            stmt.setString(3,phone);
+            stmt.setString(4,mail);
+
+            stmt.executeUpdate();
+
+            System.out.println("profile Updated");
+            viewProfile();
+        }catch(Exception e){ System.out.println(e);}
+    }
+
     public static void showMenu() {
         int choice = 1;
         while (choice != 4) {
-            System.out.println("1.View Orders\n2.Place Order\n3.View Items\n4.Exit");
+            System.out.println("1.View Orders\n2.Place Order\n3.View Items\n4.View Profile\n5.Update Profile\n6.Exit");
             choice = sc.nextInt();
             switch (choice) {
                 case 1:
@@ -197,6 +251,12 @@ public static void dbconnect()
                     viewItems();
                     break;
                 case 4:
+                    viewProfile();
+                    break;
+                case 5:
+                    updateProfile();
+                    break;
+                case 6:
                     System.exit(0);
                 default:
                     break;
@@ -342,7 +402,7 @@ public static void dbconnect()
             return;
         } else {
             while (choice != 6) {
-                System.out.println("1.View Orders\n2.View Items\n3.Edit Item\n4.Create Item\n5.Delete Item\n6.Exit");
+                System.out.println("1.View Orders\n2.View Items\n3.Edit Item\n4.Create Item\n5.Delete Item\n6.View Profile\n7.Update Profile\n8.Exit");
                 choice = sc.nextInt();
                 switch (choice) {
                     case 1:
@@ -361,6 +421,12 @@ public static void dbconnect()
                         deleteItem();
                         break;
                     case 6:
+                        viewProfile();
+                        break;
+                    case 7:
+                        updateProfile();
+                        break;
+                    case 8:
                         System.exit(0);
                         break;
 
