@@ -17,7 +17,7 @@
   * View or Update his profile.
 * Option to login as admin is shown only when an admin logins.
 * Automatic decrease of stock when an order is placed.
-* Orders are not placed when the order quantity of an item is more than the available stock.
+* Orders are not placed when the order quantity of an item is more than the available stock.[feature can be modified for back ordering]
 ### Homepage:
 ![homepage](ouput/homepage.png)
 

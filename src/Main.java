@@ -13,7 +13,7 @@ class Main {
     public static void dbconnect() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "Harishwin@123");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/MINI?characterEncoding=utf8", "root", "password");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -56,9 +56,9 @@ class Main {
             r.next();
             stmt.setInt(1, Order_ID);
             ResultSet rs = stmt.executeQuery();
-            System.out.println("Item ID  Item Name  Cost  Quantity");
+            System.out.println("Item ID || Item Name || Cost || Quantity");
             while (rs.next()) {
-                System.out.println(rs.getInt(1) + " " + rs.getString(2) + "  " + rs.getInt(3) + "  " + rs.getInt(4));
+                System.out.println(rs.getInt(1) + " || " + rs.getString(2) + " || " + rs.getInt(3) + " || " + rs.getInt(4));
 
             }
             System.out.println("Total : " + r.getInt("Total"));
@@ -76,9 +76,9 @@ class Main {
             int id = customer_id;
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
-            System.out.println("Order Id  Placed At  Total  Discount");
+            System.out.println("Order Id || Placed At || Total || Discount");
             while (rs.next()) {
-                System.out.println(rs.getInt(1) + " " + rs.getString(2) + "  " + rs.getInt(3) + "  " + rs.getInt(4));
+                System.out.println(rs.getInt(1) + " || " + rs.getString(2) + " || " + rs.getInt(3) + " || " + rs.getInt(4));
 
             }
             while (choice != -1) {
@@ -101,9 +101,9 @@ class Main {
             //int choice = 1;
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT Item_ID, Name, Current_stock, Selling_cost from Items");
-            System.out.println("Item ID  Name  Stock  Cost");
+            System.out.println("Item ID || Name || Stock || Cost");
             while (rs.next()) {
-                System.out.println(rs.getInt(1) + " " + rs.getString(2) + "  " + rs.getInt(3) + "  " + rs.getInt(4));
+                System.out.println(rs.getInt(1) + "       || " + rs.getString(2) + " || " + rs.getInt(3) + " || " + rs.getInt(4));
 
             }
         } catch (Exception e) {
@@ -133,6 +133,7 @@ class Main {
             viewItems();
             while (choice != 3) {
                 System.out.println("1.AddItem\n2.Confirm Order\n3.Exit");
+                System.out.print("Enter your Choice:");
                 choice = sc.nextInt();
                 switch (choice) {
                     case 1:
@@ -211,7 +212,7 @@ class Main {
             ResultSet rs = stmt.executeQuery();
             System.out.println("Customer Id || Name || Age || Phone || Mail");
             while (rs.next()) {
-                System.out.println(rs.getInt(1) + " " + rs.getString(2) + "  " + rs.getInt(3) + "  " + rs.getString(4) + " " + rs.getString(5));
+                System.out.println(rs.getInt(1) + " || " + rs.getString(2) + " || " + rs.getInt(3) + " || " + rs.getString(4) + " || " + rs.getString(5));
 
             }
             if (adminLogin == 0) {
@@ -258,7 +259,9 @@ class Main {
     public static void showMenu() {
         int choice = 1;
         while (choice != 4) {
+            System.out.println("----------------------------------------------\nCustomer Menu\n----------------------------------------------");
             System.out.println("1.View Orders\n2.Place Order\n3.View Items\n4.View Profile\n5.Update Profile\n6.Exit");
+            System.out.print("----------------------------------------------\nEnter your Choice:");
             choice = sc.nextInt();
             switch (choice) {
                 case 1:
@@ -289,9 +292,9 @@ class Main {
             int choice = 1;
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM Orders");
-            System.out.println("Customer ID  Order ID  Placed On  Total  Discount  Tax");
+            System.out.println("Customer ID || Order ID || Placed On || Total || Discount || Tax");
             while (rs.next()) {
-                System.out.println(rs.getInt(6) + " " + rs.getInt(1) + " " + rs.getString(2) + "  " + rs.getInt(3) + "  " + rs.getInt(4) + " " + rs.getInt(5));
+                System.out.println(rs.getInt(6) + " || " + rs.getInt(1) + " || " + rs.getString(2) + " || " + rs.getInt(3) + " || " + rs.getInt(4) + " || " + rs.getInt(5));
 
             }
             while (choice != -1) {
@@ -411,7 +414,9 @@ class Main {
     public static void showAdminMenu() {
         int choice = 0;
         while (choice != 6) {
+            System.out.println("----------------------------------------------\nCustomer Menu\n----------------------------------------------");
             System.out.println("1.View Orders\n2.View Items\n3.Edit Item\n4.Create Item\n5.Delete Item\n6.View Profile\n7.Update Profile\n8.Exit");
+            System.out.print("----------------------------------------------\nEnter your Choice:");
             choice = sc.nextInt();
             switch (choice) {
                 case 1:
@@ -487,7 +492,8 @@ class Main {
             PreparedStatement stmt = con.prepareStatement("SELECT * FROM Customers where Mail=?");
             String username, password;
             sc.nextLine();
-            System.out.print("Enter username:");
+            System.out.println("-----------------------------Login-----------------------------");
+            System.out.print("Enter username(email):");
             username = sc.nextLine();
             System.out.print("Enter password:");
             password = sc.nextLine();
