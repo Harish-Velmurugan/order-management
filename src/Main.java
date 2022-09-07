@@ -6,6 +6,9 @@ import java.util.Date;
 
 class Main {
     static Connection con;
+    static int customer_id = -1;
+    static int adminLogin = 0;
+    static Scanner sc = new Scanner(System.in);
 
     public static void dbconnect() {
         try {
@@ -15,10 +18,6 @@ class Main {
             System.out.println(e);
         }
     }
-
-    static int customer_id = -1;
-    static int adminLogin = 0;
-    static Scanner sc = new Scanner(System.in);
 
     public static void setAdmin() {
         int choice;
@@ -115,10 +114,11 @@ class Main {
     }
 
     public static void placeOrder() {
-        viewItems();
+
         int choice = 1;
         int item_id, quantity;
         int total = 0;
+        int current_stock,updated_stock;
         HashMap<Integer, Integer> cart = new HashMap<>();
         try {
             Statement stmt = con.createStatement();
@@ -127,9 +127,12 @@ class Main {
             if (rs.last()) {
                 id = rs.getInt("Order_ID") + 1;
             }
+            else{
+                id = 1;
+            }
             viewItems();
             while (choice != 3) {
-                System.out.print("1.AddItem\n2.Confirm Order\n3.Exit");
+                System.out.println("1.AddItem\n2.Confirm Order\n3.Exit");
                 choice = sc.nextInt();
                 switch (choice) {
                     case 1:
@@ -150,8 +153,10 @@ class Main {
                         ;
                         break;
                     case 2:
+                        PreparedStatement gs = con.prepareStatement("SELECT Current_stock FROM Items where Item_ID=?");
                         PreparedStatement ps = con.prepareStatement("INSERT INTO OrderItems VALUES (?,?,?)");
                         PreparedStatement order = con.prepareStatement("INSERT INTO Orders VALUES (?,?,?,?,?,?)");
+                        PreparedStatement ds = con.prepareStatement("UPDATE Items SET Current_stock=? WHERE Item_ID=?");
                         Calendar cal = Calendar.getInstance();
                         Timestamp timestamp = new Timestamp(cal.getTimeInMillis());
                         order.setInt(1, id);
@@ -162,12 +167,30 @@ class Main {
                         order.setInt(6, customer_id);
                         order.executeUpdate();
                         for (Map.Entry<Integer, Integer> curr_item : cart.entrySet()) {
-                            ps.setInt(1, curr_item.getKey());
+                            item_id = curr_item.getKey();
+                            quantity = curr_item.getValue();
+                            gs.setInt(1,item_id);
+                            ResultSet stock_set = gs.executeQuery();
+                            stock_set.next();
+                            current_stock = stock_set.getInt("Current_stock");
+                            updated_stock = current_stock - quantity;
+                            if(updated_stock<0){
+                                System.out.println("Low stock couldn't place order");
+                                break;
+                            }
+                            ds.setInt(1,updated_stock);
+                            ds.setInt(2,item_id);
+                            ds.executeUpdate();
+
+                            ps.setInt(1, item_id);
                             ps.setInt(2, id);
-                            ps.setInt(3, curr_item.getValue());
+                            ps.setInt(3, quantity);
                             ps.executeUpdate();
+
                         }
-                        break;
+                        System.out.println("Order Placed Successfully");
+                        return;
+
                     case 3:
                         return;
 
